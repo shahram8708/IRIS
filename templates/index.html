@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I.R.I.S - Image Recognition Insight System</title>
+    <style>
+        /* General styling for the body */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eaeaea;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Styling for the main chat container */
+        .chat-container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 95vh;
+        }
+
+        /* Styling for the messages area */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+
+        /* Styling for the input area */
+        .chat-input-container {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #ddd;
+            align-items: center;
+            background-color: #ffffff;
+        }
+
+        /* Styling for the text input field */
+        #textInput {
+            flex: 1;
+            padding: 12px 5px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            margin-right: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Hide the file input element */
+        .chat-input-container input[type="file"] {
+            display: none;
+        }
+
+        /* Styling for the file input label (upload icon) */
+        .chat-input-container label {
+            padding: 6px;
+            border-radius: 100%;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        /* Styling for buttons */
+        button {
+            background-color: #0056b3;
+            color: #ffffff;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Styling for the chat header button */
+        .chat-header button {
+            width: 100%;
+            background-color: #0056b3;
+            color: #ffffff;
+            text-align: center;
+            padding: 16px;
+            font-size: 22px;
+            border-radius: 0;
+            font-weight: 600;
+            border-bottom: 1px solid #004494;
+        }
+
+        /* Button hover effect */
+        button:hover {
+            background-color: #003d7a;
+        }
+
+        /* Styling for the result area */
+        #result {
+            display: none;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 12px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Styling for result text */
+        #result p {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Styling for the wave loader (loading indicator) */
+        .wave-loader {
+            display: none;
+            justify-content: center;
+            background-color: #f8f8f8;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Styling for each dot in the wave loader */
+        .wave-loader div {
+            width: 1em;
+            height: 1em;
+            background-color: #0056b3;
+            border-radius: 100%;
+            animation: wave 1.5s infinite ease-in-out;
+            display: inline-block;
+            margin: 0 0.2em;
+        }
+
+        /* Animation for the wave loader dots */
+        .wave-loader div:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .wave-loader div:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+        }
+
+        /* Styling for message containers */
+        .message-container {
+            margin: 10px 0;
+        }
+
+        /* Styling for images in messages */
+        .message-container img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+            margin-top: 10px;
+        }
+
+        /* Styling for user and bot messages */
+        .user-message,
+        .bot-message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f1f1f1;
+        }
+
+        /* Styling for user messages */
+        .user-message {
+            background-color: #cfe9ff;
+            align-self: flex-end;
+        }
+
+        /* Hide the copy button for user messages */
+        .user-message .copy-button {
+            display: none;
+        }
+
+        /* Styling for bot messages */
+        .bot-message {
+            background-color: #e2e2e2;
+            align-self: flex-start;
+        }
+
+        /* Hidden class for elements that should be hidden */
+        .hidden {
+            display: none;
+        }
+
+        /* Styling for upload icon */
+        .upload-icon {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        /* Hover effect for upload icon */
+        .upload-icon:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styling for the image preview container */
+        .image-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 5px 10px;
+            background-color: #f8f8f8;
+        }
+
+        /* Styling for the image preview */
+        #imagePreview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+        }
+
+        /* Styling for message buttons */
+        .message-buttons {
+            margin-top: 10px;
+        }
+
+        /* Styling for individual message buttons */
+        .message-button {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 6px 12px;
+            margin: 0 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hover effect for message buttons */
+        .message-button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Styling for copy button */
+        .copy-button {
+            color: #007bff;
+            border-color: #007bff;
+        }
+
+        /* Hover effect for copy button */
+        .copy-button:hover {
+            background-color: #e6f0ff;
+        }
+
+        /* Styling for play button */
+        .play-button {
+            color: #28a745;
+            border-color: #28a745;
+        }
+
+        /* Hover effect for play button */
+        .play-button:hover {
+            background-color: #d4edda;
+        }
+
+        /* Styling for stop button */
+        .stop-button {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        /* Hover effect for stop button */
+        .stop-button:hover {
+            background-color: #f8d7da;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <!-- Main chat container -->
+    <div class="chat-container">
+        <!-- Header section with delete chat button -->
+        <div class="chat-header">
+            <button onclick="deleteChat()">I.R.I.S - Delete Chat</button>
+        </div>
+        <!-- Area for displaying chat messages -->
+        <div class="chat-messages" id="chatMessages"></div>
+        <!-- Loader animation for when data is being fetched -->
+        <div class="wave-loader" id="waveLoader">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <!-- Container for image preview before sending -->
+        <div class="image-preview-container" id="imagePreviewContainer">
+            <img id="imagePreview" src="" alt="Image Preview" style="display: none;">
+        </div>
+        <!-- Input area for sending messages and uploading images -->
+        <div class="chat-input-container">
+            <label for="imageInput" class="upload-icon">
+                <i class="fas fa-image"></i>
+            </label>
+            <input type="file" id="imageInput" accept="image/*">
+            <input type="text" id="textInput" placeholder="Enter your message..." required>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <!-- Section for displaying results -->
+        <div id="result">
+            <p id="responseText"></p>
+        </div>
+    </div>
+
+    <script>
+        // Variable to store the last uploaded image data
+        let lastUploadedImage = null;
+
+        // Function to delete chat history
+        function deleteChat() {
+            // Confirm with the user before deleting
+            if (confirm('Are you sure you want to delete the chat history?')) {
+                // Clear the chat messages from the page
+                document.getElementById('chatMessages').innerHTML = '';
+                // Remove chat history from local storage
+                localStorage.removeItem('chatHistory');
+                // Reset last uploaded image and remove it from local storage
+                lastUploadedImage = null;
+                localStorage.removeItem('lastUploadedImage');
+                // Hide the image preview
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        }
+
+        // Function to append a new message to the chat
+        function appendMessage(sender, message, image = null) {
+            // Get the chat messages container
+            const chatMessages = document.getElementById('chatMessages');
+            // Create a new message container
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message-container');
+            messageContainer.classList.add(sender === 'You' ? 'user-message' : 'bot-message');
+
+            // Generate a unique ID for this message
+            const uniqueId = Date.now();
+
+            // Define buttons for copy, play, and stop actions
+            const copyButton = `<button class="message-button copy-button" onclick="copyMessage('${uniqueId}')">📋</button>`;
+            const playButton = `<button class="message-button play-button" onclick="playMessage('${uniqueId}')">▶️</button>`;
+            const stopButton = `<button class="message-button stop-button" onclick="stopMessage()">⏹️</button>`;
+
+            // Choose buttons based on the sender
+            const buttons = sender === 'You' ? copyButton : `${copyButton} ${playButton} ${stopButton}`;
+
+            // Add content to the message container
+            if (image) {
+                // If there is an image, include it in the message
+                messageContainer.innerHTML = `
+                    <strong>${sender}:</strong><br>
+                    <img src="${image}" alt="Uploaded Image">
+                    <p id="message-${uniqueId}" data-message="${message}">${message}</p>
+                    <div class="message-buttons">${buttons}</div>
+                `;
+            } else {
+                // If no image, just include text
+                messageContainer.innerHTML = `
+                    <strong>${sender}:</strong> <span id="message-${uniqueId}" data-message="${message}">${message}</span>
+                    <div class="message-buttons">${buttons}</div>
+                `;
+            }
+
+            // Add the message container to the chat messages container
+            chatMessages.appendChild(messageContainer);
+            // Scroll to the bottom of the chat messages
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Event listener for image input changes
+        document.getElementById('imageInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    // Store and display the uploaded image
+                    lastUploadedImage = e.target.result;
+                    localStorage.setItem('lastUploadedImage', lastUploadedImage);
+                    document.getElementById('imagePreview').src = lastUploadedImage;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Initialize speech synthesis and current utterance variable
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+
+        // Function to copy message text to clipboard
+        function copyMessage(id) {
+            const message = document.getElementById(`message-${id}`).dataset.message;
+            navigator.clipboard.writeText(message).then(() => {
+                alert('Message copied to clipboard!');
+            }).catch(err => {
+                console.error('Error copying text: ', err);
+            });
+        }
+
+        // Function to read out a message using speech synthesis
+        function playMessage(id) {
+            const message = document.getElementById(`message-${id}`).dataset.message;
+            if (currentUtterance) {
+                speechSynthesis.cancel();
+            }
+            currentUtterance = new SpeechSynthesisUtterance(message);
+            speechSynthesis.speak(currentUtterance);
+        }
+
+        // Function to stop any ongoing speech synthesis
+        function stopMessage() {
+            if (currentUtterance) {
+                speechSynthesis.cancel();
+            }
+        }
+
+        // Function to save the current chat history to local storage
+        function saveChatHistory() {
+            const chatMessages = document.getElementById('chatMessages').innerHTML;
+            localStorage.setItem('chatHistory', chatMessages);
+        }
+
+        // Function to load chat history from local storage when the page loads
+        function loadChatHistory() {
+            const chatHistory = localStorage.getItem('chatHistory');
+            lastUploadedImage = localStorage.getItem('lastUploadedImage');
+            if (chatHistory) {
+                document.getElementById('chatMessages').innerHTML = chatHistory;
+                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+            }
+        }
+
+        // Load chat history when the page is loaded
+        window.onload = loadChatHistory;
+
+        // Function to send a message
+        function sendMessage() {
+            const textInput = document.getElementById('textInput');
+            const imageInput = document.getElementById('imageInput');
+            const waveLoader = document.getElementById('waveLoader');
+            const imagePreview = document.getElementById('imagePreview');
+
+            const text = textInput.value.trim();
+            const file = imageInput.files[0];
+
+            // Check if there is text or an image to send
+            if (!text && !file) {
+                alert('Please enter a message or select an image.');
+                return;
+            }
+
+            // Append the user's message to the chat
+            if (text) {
+                appendMessage('You', text, file ? lastUploadedImage : null);
+            }
+
+            // Show the loading indicator
+            waveLoader.style.display = 'flex';
+
+            if (file) {
+                // Handle the image upload
+                const reader = new FileReader();
+                reader.onload = function () {
+                    lastUploadedImage = reader.result;
+                    localStorage.setItem('lastUploadedImage', lastUploadedImage);
+
+                    const payload = {
+                        "contents": [{
+                            "parts": [{
+                                "text": text || 'Image'
+                            }, {
+                                "inlineData": {
+                                    "mimeType": file.type,
+                                    "data": lastUploadedImage.split(',')[1]
+                                }
+                            }]
+                        }]
+                    };
+
+                    // Send a request to generate content from the image
+                    fetch('/generate_content', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            waveLoader.style.display = 'none';
+                            if (data.generated_text) {
+                                appendMessage('I.R.I.S', data.generated_text);
+                            } else {
+                                appendMessage('I.R.I.S', 'Sorry, I couldn\'t generate content from the image.');
+                            }
+                            saveChatHistory();
+                        })
+                        .catch(error => {
+                            waveLoader.style.display = 'none';
+                            console.error('Error:', error);
+                            appendMessage('I.R.I.S', 'There was an error processing your request.');
+                        });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Handle text-only messages
+                if (lastUploadedImage) {
+                    const payload = {
+                        "contents": [{
+                            "parts": [{
+                                "text": text || 'Image'
+                            }, {
+                                "inlineData": {
+                                    "mimeType": 'image/jpeg',
+                                    "data": lastUploadedImage.split(',')[1]
+                                }
+                            }]
+                        }]
+                    };
+
+                    fetch('/generate_content', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            waveLoader.style.display = 'none';
+                            if (data.generated_text) {
+                                appendMessage('I.R.I.S', data.generated_text);
+                            } else {
+                                appendMessage('I.R.I.S', 'Sorry, I couldn\'t generate content from the image.');
+                            }
+                            saveChatHistory();
+                        })
+                        .catch(error => {
+                            waveLoader.style.display = 'none';
+                            console.error('Error:', error);
+                            appendMessage('I.R.I.S', 'There was an error processing your request.');
+                        });
+                } else {
+                    // Handle text-only messages without an image
+                    const formData = new FormData();
+                    formData.append('user_input', text);
+
+                    fetch('/chat', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            waveLoader.style.display = 'none';
+                            if (data.bot_response) {
+                                appendMessage('I.R.I.S', data.bot_response);
+                            } else {
+                                appendMessage('I.R.I.S', 'Sorry, I couldn\'t respond to your message.');
+                            }
+                            saveChatHistory();
+                        })
+                        .catch(error => {
+                            waveLoader.style.display = 'none';
+                            console.error('Error:', error);
+                            appendMessage('I.R.I.S', 'There was an error processing your request.');
+                        });
+                }
+            }
+
+            // Clear input fields and hide image preview
+            textInput.value = '';
+            imageInput.value = '';
+            imagePreview.style.display = 'none';
+        }
+    </script>
+
+</body>
+
+</html>
